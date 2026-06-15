@@ -1,0 +1,122 @@
+model:
+  dt: 0.01
+  A0: 0.0333333333
+  omega: 0.0666666667
+  eta: 0.03
+  theta: 5.6
+  Gamma: 0.002
+police:
+  M_tot: 500.0
+  eta_M: 0.1
+  omega_M: 0.0666666667
+removal:
+  delta: 0.0666666667
+  event_order: sequential
+grid:
+  L: 128
+  g_values: &id001
+  - 0.0
+  - 0.5
+  - 0.7
+  - 0.85
+  - 1.0
+  - 1.2
+  - 1.5
+  - 3.0
+  seeds: &id002
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  T_max: 365
+windows:
+  burn_in_day: 185
+  stationary_lo: 185
+  stationary_hi: 365
+output:
+  save_summary: true
+  save_daily: true
+  save_fields: true
+  snapshot_days:
+  - final
+  snapshot_g:
+  - 0.0
+  - 0.5
+  - 1.0
+  - 3.0
+  movie_every: null
+  movie_g:
+  - 0.0
+  - 1.0
+  - 3.0
+  save_event_logs: false
+  event_log_g:
+  - 0.0
+  - 1.0
+  - 3.0
+run_sets:
+  pilot:
+    L: 64
+    g_values:
+    - 0.0
+    - 0.5
+    - 1.0
+    - 1.5
+    - 3.0
+    seeds:
+    - 0
+    - 1
+    - 2
+    T_max: 120
+    windows:
+      burn_in_day: 60
+      stationary_lo: 60
+      stationary_hi: 120
+  intermediate:
+    L: 128
+    g_values: *id001
+    seeds: *id002
+    T_max: 365
+    windows:
+      burn_in_day: 185
+      stationary_lo: 185
+      stationary_hi: 365
+  final:
+    L: 128
+    g_values:
+    - 0.0
+    - 0.3
+    - 0.5
+    - 0.7
+    - 0.85
+    - 1.0
+    - 1.2
+    - 1.5
+    - 2.0
+    - 3.0
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    T_max: 365
+    windows:
+      burn_in_day: 185
+      stationary_lo: 185
+      stationary_hi: 365
+_active_run_set: intermediate
