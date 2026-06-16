@@ -31,7 +31,7 @@ C.apply_style()
 SERIES = [("n_criminals", "active criminals  $N(t)$"),
           ("crimes_that_day", "crimes / day"),
           ("home_exits_that_day", "home exits / day"),
-          ("inflow_that_day", r"inflow / day  $\Gamma L^2$")]
+          ("net_flux", r"net criminal flux  $\Delta N$ / day")]
 
 
 def seed_band(df, g, col, smooth):
@@ -72,6 +72,10 @@ def main():
     if daily.empty:
         print("no daily.csv under", C.runs_dir(output_dir), "- run the scan first.")
         return
+    # net criminal flux per day = dN/dt = inflow - crimes - home exits (== daily ΔN,
+    # since the mass balance closes). ~0 in steady state; positive during the transient.
+    daily["net_flux"] = (daily["inflow_that_day"] - daily["crimes_that_day"]
+                         - daily["home_exits_that_day"])
     gs = sorted(daily.g.unique())
     if want:
         wset = [float(x) for x in want.split(",")]
@@ -98,19 +102,26 @@ def main():
         ttl = {"n_criminals": "Criminal population over time (return-home, $\\delta=1/15$)",
                "crimes_that_day": "Crimes per day over time",
                "home_exits_that_day": "Home exits per day over time",
-               "inflow_that_day": "Inflow per day (Poisson, should be flat)"}[col]
+               "net_flux": "Net criminal flux $\\Delta N$/day (inflow $-$ crimes $-$ home; "
+                           "$\\to 0$ at steady state)"}[col]
         ax.set_title(ttl)
         C.save_fig(fig, "ts_" + col.replace("_that_day", ""), output_dir)
 
-    # combined panel: 4 series (no mass-balance error, no shading)
-    fig, axes = plt.subplots(2, 2, figsize=(13, 9))
-    flat = axes.ravel()
-    for (col, lab), ax in zip(SERIES, flat):
-        one(col, lab, ax)
-    flat[0].legend(fontsize=8, ncol=2)
-    fig.suptitle("Time series by g (mean $\\pm$ SEM over seeds)", y=0.995)
-    fig.tight_layout()
-    C.save_fig(fig, "ts_combined", output_dir)
+    # combined panel: 4 series (no mass-balance error, no shading).
+    # Two versions: linear time and log time (the log axis expands the early
+    # transient where the population equilibrates).
+    for xscale, fname, note in [("linear", "ts_combined", ""),
+                                ("log", "ts_combined_logx", "  (log time axis)")]:
+        fig, axes = plt.subplots(2, 2, figsize=(13, 9))
+        flat = axes.ravel()
+        for (col, lab), ax in zip(SERIES, flat):
+            one(col, lab, ax)
+            if xscale == "log":
+                ax.set_xscale("log")
+        flat[0].legend(fontsize=8, ncol=2)
+        fig.suptitle("Time series by g (mean $\\pm$ SEM over seeds)" + note, y=0.995)
+        fig.tight_layout()
+        C.save_fig(fig, fname, output_dir)
 
 
 if __name__ == "__main__":

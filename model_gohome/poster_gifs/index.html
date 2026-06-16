@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PQP — field animations</title>
+<style>
+  :root{
+    --ink:#1B2A4A; --paper:#F4F1EA; --crime:#D55E00; --police:#0072B2;
+    --accent:#E69F00; --grid:#6B6A64;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+       font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       line-height:1.5}
+  header{padding:24px 18px 8px;max-width:980px;margin:0 auto}
+  h1{margin:0 0 4px;font-size:1.5rem}
+  .sub{color:var(--grid);font-size:.95rem;margin:0}
+  main{max-width:980px;margin:0 auto;padding:12px 18px 48px}
+  h2{font-size:1.05rem;border-bottom:1px solid var(--grid);padding-bottom:6px;
+     margin:28px 0 14px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+  figure{margin:0;background:#fff;border:1px solid #e3dfd4;border-radius:10px;
+         overflow:hidden}
+  figure img{display:block;width:100%;height:auto;background:#fff}
+  figcaption{padding:8px 10px;font-size:.85rem;color:var(--ink)}
+  .tag{display:inline-block;font-size:.72rem;font-weight:600;padding:1px 7px;
+       border-radius:999px;color:#fff;margin-left:6px;vertical-align:middle}
+  .pre{background:var(--police)} .mid{background:var(--accent)} .post{background:var(--crime)}
+  footer{max-width:980px;margin:0 auto;padding:0 18px 40px;color:var(--grid);font-size:.8rem}
+  code{background:#fff;border:1px solid #e3dfd4;border-radius:5px;padding:1px 5px}
+</style>
+</head>
+<body>
+<header>
+  <h1>PQP model — field animations</h1>
+  <p class="sub">Police-extended Short crime-hotspot model with return-home removal.
+     Fields evolving in time for three deterrence regimes
+     (<b>g&nbsp;=&nbsp;χ·M̄</b>): pre-, around-, and post-transition.</p>
+</header>
+<main>
+  <h2>Combined B · M · Ã <span class="tag pre">g=0</span><span class="tag mid">g=1</span><span class="tag post">g=3</span></h2>
+  <div class="grid" id="combined"></div>
+
+  <h2>Per-field animations</h2>
+  <div class="grid" id="fields"></div>
+</main>
+<footer>
+  PQP poster · field GIFs · scan-to-view. If an animation is missing it was simply not
+  exported for that case. Generated with <code>make_gifs_from_snapshots.py</code>.
+</footer>
+
+<script>
+  // GIFs are expected to sit next to this index.html (copy the contents of
+  // out_gohome_events/figures/gifs/ here). Missing files are hidden automatically.
+  const gvals = [0, 1, 3];
+  const fields = [["B", "B — attractiveness"], ["M", "M — police field"],
+                  ["A_tilde", "Ã — effective attractiveness"],
+                  ["deter", "e^(−χM) — deterrence"]];
+  const regimeTag = g => g === 0 ? '<span class="tag pre">pre</span>'
+                      : g === 1 ? '<span class="tag mid">transition</span>'
+                                : '<span class="tag post">post</span>';
+
+  function card(src, caption){
+    const fig = document.createElement('figure');
+    const img = document.createElement('img');
+    img.loading = 'lazy'; img.src = src; img.alt = caption;
+    img.onerror = () => fig.remove();          // hide if the file isn't there
+    const cap = document.createElement('figcaption'); cap.innerHTML = caption;
+    fig.appendChild(img); fig.appendChild(cap); return fig;
+  }
+
+  const comb = document.getElementById('combined');
+  gvals.forEach(g => comb.appendChild(
+    card(`combined_g${g}.gif`, `g = ${g} ${regimeTag(g)}`)));
+
+  const fl = document.getElementById('fields');
+  gvals.forEach(g => fields.forEach(([key, label]) =>
+    fl.appendChild(card(`${key}_g${g}.gif`, `${label} · g = ${g} ${regimeTag(g)}`))));
+</script>
+</body>
+</html>
