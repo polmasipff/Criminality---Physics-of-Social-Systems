@@ -37,15 +37,15 @@ does neither.
 
 Effective attractiveness, burglary probability, movement bias:
 
-- Ã_s = A0 + B_s · e^(−χ M_s)   (dissuasion acts only on the dynamic part; intrinsic A0 cannot be patrolled)
-- p_s = 1 − e^(−Ã_s δt)   (kept as Short, so χ=0 reproduces the base replication)
-- q_{s→s'} ∝ Ã_{s'}
+-$ Ã_s = A0 + B_s · e^(−χ M_s) $  (dissuasion acts only on the dynamic part; intrinsic A0 cannot be patrolled)
+- $p_s = 1 − e^(−Ã_s δt) $  (kept as Short, so χ=0 reproduces the base replication)
+-$ q_{s→s'} ∝ Ã_{s'}$
 
 Field updates (B exactly as Short; M conserved):
 
-- B_s(t+δt) = [(1−η)B_s + (η/z)Σ_nn B](1−ωδt) + θ E_s
-- M_s(t+δt) = (1−ω_M δt)[(1−η_M)M_s + (η_M/z)Σ_nn M] + ω_M δt · M_tot · E_s/ΣE
-- optional arrest: p_rem = 1 − e^(−κ M_s δt), removed criminals exit without raising B.
+- $B_s(t+δt) = [(1−η)B_s + (η/z)Σ_nn B](1−ωδt) + θ E_s$
+- $M_s(t+δt) = (1−ω_M δt)[(1−η_M)M_s + (η_M/z)Σ_nn M] + ω_M δt · M_tot · E_s/ΣE$
+- optional arrest: $p_rem = 1 − e^(−κ M_s δt)$, removed criminals exit without raising B.
 
 Base parameters: L=128, δt=1/100, ω=1/15, A0=1/30, η=0.03, θ=5.6, Γ=0.002.
 Police: M_tot=500, η_M=0.1, ω_M=1/15. Control parameters g = χ·M̄, h = κ·M̄, M̄ = M_tot/L².
