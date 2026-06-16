@@ -25,11 +25,12 @@ import matplotlib.pyplot as plt
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import common as C  # noqa: E402
+C.apply_style()
 
-ROW_SPEC = [("B", r"$B$  (attractiveness)", "hot"),
-            ("M", r"$M$  (police field)", "viridis"),
-            ("A_tilde", r"$\tilde A = A_0 + B\,e^{-\chi M}$", "hot"),
-            ("deter", r"deterrence $e^{-\chi M}$", "cividis")]
+ROW_SPEC = [("B", r"$B$  (attractiveness)", C.CMAP_CRIME),
+            ("M", r"$M$  (police field)", C.CMAP_POLICE),
+            ("A_tilde", r"$\tilde A = A_0 + B\,e^{-\chi M}$", C.CMAP_CRIME),
+            ("deter", r"deterrence $e^{-\chi M}$", C.CMAP_DETER)]
 
 
 def regime_label(g):

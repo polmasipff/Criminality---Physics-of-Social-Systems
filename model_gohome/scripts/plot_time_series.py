@@ -26,12 +26,12 @@ import matplotlib.pyplot as plt
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import common as C  # noqa: E402
+C.apply_style()
 
 SERIES = [("n_criminals", "active criminals  $N(t)$"),
           ("crimes_that_day", "crimes / day"),
           ("home_exits_that_day", "home exits / day"),
-          ("inflow_that_day", r"inflow / day  $\Gamma L^2$"),
-          ("balance_error", "mass-balance error")]
+          ("inflow_that_day", r"inflow / day  $\Gamma L^2$")]
 
 
 def seed_band(df, g, col, smooth):
@@ -58,9 +58,10 @@ def windows(output_dir):
 
 def shade(ax, burn, lo, hi):
     if burn:
-        ax.axvspan(0, burn, color="0.85", alpha=0.5, lw=0, label="burn-in")
+        ax.axvspan(0, burn, color=C.PALETTE["grid"], alpha=0.12, lw=0, label="burn-in")
     if lo and hi:
-        ax.axvspan(lo, hi, color="C2", alpha=0.08, lw=0, label="stationary window")
+        ax.axvspan(lo, hi, color=C.PALETTE["police"], alpha=0.10, lw=0,
+                   label="stationary window")
 
 
 def main():
@@ -76,7 +77,7 @@ def main():
         wset = [float(x) for x in want.split(",")]
         gs = [g for g in gs if any(abs(g - w) < 1e-6 for w in wset)]
     burn, lo, hi = windows(output_dir)
-    colors = plt.cm.viridis(np.linspace(0, 0.92, len(gs)))
+    colors = C.g_colors(len(gs))
 
     def one(col, lab, ax):
         for g, c in zip(gs, colors):
@@ -87,8 +88,7 @@ def main():
             ax.plot(t, m, color=c, lw=1.6, label="g=%g" % g)
             if (s > 0).any():
                 ax.fill_between(t, m - s, m + s, color=c, alpha=0.18, lw=0)
-        shade(ax, burn, lo, hi)
-        ax.set_xlabel("day"); ax.set_ylabel(lab); ax.grid(alpha=.3)
+        ax.set_xlabel("day"); ax.set_ylabel(lab)
 
     # individual figures
     for col, lab in SERIES:
@@ -98,20 +98,17 @@ def main():
         ttl = {"n_criminals": "Criminal population over time (return-home, $\\delta=1/15$)",
                "crimes_that_day": "Crimes per day over time",
                "home_exits_that_day": "Home exits per day over time",
-               "inflow_that_day": "Inflow per day (Poisson, should be flat)",
-               "balance_error": "Daily mass-balance error (must be 0)"}[col]
+               "inflow_that_day": "Inflow per day (Poisson, should be flat)"}[col]
         ax.set_title(ttl)
         C.save_fig(fig, "ts_" + col.replace("_that_day", ""), output_dir)
 
-    # combined panel
-    fig, axes = plt.subplots(2, 3, figsize=(17, 9))
+    # combined panel: 4 series (no mass-balance error, no shading)
+    fig, axes = plt.subplots(2, 2, figsize=(13, 9))
     flat = axes.ravel()
     for (col, lab), ax in zip(SERIES, flat):
         one(col, lab, ax)
     flat[0].legend(fontsize=8, ncol=2)
-    flat[-1].axis("off")
-    fig.suptitle("Time series by g (mean $\\pm$ SEM over seeds; shaded = burn-in / "
-                 "stationary window)", y=0.995)
+    fig.suptitle("Time series by g (mean $\\pm$ SEM over seeds)", y=0.995)
     fig.tight_layout()
     C.save_fig(fig, "ts_combined", output_dir)
 

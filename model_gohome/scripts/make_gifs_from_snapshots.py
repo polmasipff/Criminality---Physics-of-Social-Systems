@@ -28,6 +28,7 @@ import matplotlib.pyplot as plt
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import common as C  # noqa: E402
+C.apply_style()
 
 try:
     import imageio.v2 as imageio
@@ -35,7 +36,7 @@ except Exception:
     import imageio
 
 FIELDS = ["B", "M", "A_tilde", "deter"]
-CMAP = {"B": "hot", "M": "viridis", "A_tilde": "hot", "deter": "cividis"}
+CMAP = {"B": C.CMAP_CRIME, "M": C.CMAP_POLICE, "A_tilde": C.CMAP_CRIME, "deter": C.CMAP_DETER}
 FLABEL = {"B": r"$B$", "M": r"$M$", "A_tilde": r"$\tilde A$", "deter": r"$e^{-\chi M}$"}
 
 

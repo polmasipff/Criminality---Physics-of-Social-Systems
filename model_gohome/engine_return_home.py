@@ -278,6 +278,11 @@ def run_return_home_sim(L=128, dt=1 / 100, T_max=365,
             hot10 = B >= thr10
             deterf = np.exp(-chi * M)
             A_tilde_now = A0 + B * deterf      # consistent with post-update B, M
+            # --- effective-attractiveness (Atilde) statistics: PRIMARY order field,
+            #     because B alone does not show the police suppression e^{-chi M} ---
+            flat_At = A_tilde_now.ravel()
+            Atm = float(A_tilde_now.mean())
+            hotA10 = A_tilde_now >= np.percentile(flat_At, 90)
             rec = dict(
                 day=day, L=L, seed=seed,
                 chi=chi, delta=delta, g=g, M_tot=M_tot, eta_M=eta_M, omega_M=omega_M,
@@ -300,7 +305,19 @@ def run_return_home_sim(L=128, dt=1 / 100, T_max=365,
                 B_q90_over_mean=float(np.percentile(flat_B, 90) / Bm) if Bm > 0 else 0.0,
                 B_q95_over_mean=float(np.percentile(flat_B, 95) / Bm) if Bm > 0 else 0.0,
                 B_q99_over_mean=float(np.percentile(flat_B, 99) / Bm) if Bm > 0 else 0.0,
-                Atilde_mean=float(A_tilde_now.mean()),
+                # --- Atilde-based order parameters (PRIMARY; show the police effect) ---
+                Atilde_mean=Atm,
+                Atilde_std=float(A_tilde_now.std()),
+                H_At=float(A_tilde_now.std() / Atm) if Atm > 0 else 0.0,
+                f_hotA_2=float((A_tilde_now >= 2 * Atm).mean()),
+                f_hotA_3=float((A_tilde_now >= 3 * Atm).mean()),
+                At_q90_over_mean=float(np.percentile(flat_At, 90) / Atm) if Atm > 0 else 0.0,
+                At_q95_over_mean=float(np.percentile(flat_At, 95) / Atm) if Atm > 0 else 0.0,
+                At_q99_over_mean=float(np.percentile(flat_At, 99) / Atm) if Atm > 0 else 0.0,
+                Gini_At=gini(A_tilde_now),
+                AtM_corr=float(np.corrcoef(flat_At, flat_M)[0, 1]) if flat_M.std() > 0 else 0.0,
+                M_mass_on_hotA10=float(M[hotA10].sum() / Mtot_now) if Mtot_now > 0 else 0.0,
+                deterrence_hotA=float(deterf[hotA10].mean()),
                 deterrence_mean=float(deterf.mean()),
                 deterrence_hot=float(deterf[hot10].mean()),
                 M_cv=float(flat_M.std() / flat_M.mean()) if flat_M.mean() > 0 else 0.0,

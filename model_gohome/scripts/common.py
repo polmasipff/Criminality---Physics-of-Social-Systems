@@ -86,6 +86,98 @@ def ensure_dir(d):
     return d
 
 
+# --------------------------------------------------------------------------- #
+#  Colorblind-safe palette (Okabe & Ito 2008), with role names kept.
+#  All categorical colors are drawn from the Okabe-Ito set, which is mutually
+#  distinguishable under deuteranopia / protanopia / tritanopia. Heat maps are
+#  single-hue (light->dark) ramps, which are inherently colorblind-safe; the
+#  deterrence map uses cividis (CVD-optimized). No gridlines are drawn.
+# --------------------------------------------------------------------------- #
+# Okabe-Ito base
+_OI = dict(black="#000000", orange="#E69F00", skyblue="#56B4E9", green="#009E73",
+           yellow="#F0E442", blue="#0072B2", vermillion="#D55E00", purple="#CC79A7")
+
+PALETTE = dict(
+    ink="#1B2A4A",            # dark navy for text (non-data)
+    paper="#F4F1EA",          # light background (non-data)
+    crime=_OI["vermillion"],  # crime / B / Atilde  (warm)
+    police=_OI["blue"],       # police field M      (cool)  -> orange/blue is the safest pair
+    accent=_OI["orange"],     # secondary highlight
+    grid="#6B6A64",           # axis spines / ticks (no gridlines are drawn)
+    crime_light="#F2C0A4",    # light vermillion (cmap endpoint)
+    police_light="#9EC9E6",   # light blue (cmap endpoint)
+    accent_dark="#9C6B00",    # dark orange (reference lines)
+    navy_mid=_OI["skyblue"],  # sky blue (distinct line color)
+    green=_OI["green"], purple=_OI["purple"], yellow=_OI["yellow"],
+)
+# categorical cycle (all mutually CVD-distinct)
+CYCLE = [_OI["vermillion"], _OI["blue"], _OI["orange"], _OI["green"],
+         _OI["purple"], _OI["skyblue"]]
+# fixed colors for the candidate waiting-time laws (5 distinct Okabe-Ito hues)
+MODEL_COLORS = {
+    "exponential": _OI["blue"], "weibull": _OI["orange"], "lognormal": _OI["green"],
+    "powerlaw": _OI["vermillion"], "trunc_powerlaw": _OI["purple"],
+}
+
+
+def _segmap(name, colors):
+    from matplotlib.colors import LinearSegmentedColormap
+    return LinearSegmentedColormap.from_list(name, colors)
+
+
+# single-hue sequential heat maps (light -> saturated -> dark) = colorblind-safe
+CMAP_CRIME = _segmap("cb_crime", ["#FFF7F2", PALETTE["crime_light"],
+                                  PALETTE["crime"], "#5A2600"])
+CMAP_POLICE = _segmap("cb_police", ["#F2F8FC", PALETTE["police_light"],
+                                    PALETTE["police"], "#022A44"])
+
+
+def _get_cmap(name):
+    import matplotlib
+    try:
+        return matplotlib.colormaps[name]            # modern API (mpl >= 3.6)
+    except Exception:
+        import matplotlib.cm as _cm
+        return _cm.get_cmap(name)
+
+
+CMAP_DETER = _get_cmap("cividis")   # deterrence e^{-chi M}: CVD-optimized sequential
+
+
+def g_colors(n):
+    """n colors along the colorblind-safe perceptually-uniform viridis ramp, for
+    curves ordered by g (dark = low g, bright = high g)."""
+    if n <= 1:
+        return [PALETTE["crime"]]
+    vir = _get_cmap("viridis")
+    return [vir(t) for t in np.linspace(0.05, 0.92, n)]
+
+
+def apply_style():
+    """Apply the colorblind-safe look and DISABLE all gridlines (call once)."""
+    import matplotlib as mpl
+    import matplotlib.axes as _maxes
+    mpl.rcParams.update({
+        "figure.facecolor": "white",
+        "axes.facecolor": "white",
+        "axes.edgecolor": PALETTE["grid"],
+        "axes.labelcolor": PALETTE["ink"],
+        "axes.titlecolor": PALETTE["ink"],
+        "text.color": PALETTE["ink"],
+        "xtick.color": PALETTE["grid"],
+        "ytick.color": PALETTE["grid"],
+        "axes.grid": False,
+        "axes.prop_cycle": mpl.cycler(color=CYCLE),
+        "font.size": 11,
+        "axes.titlesize": 12,
+    })
+    # Force every ax.grid(...) call to a no-op so NO gridlines appear anywhere,
+    # regardless of explicit calls in the plotting scripts.
+    if not getattr(_maxes.Axes, "_grid_disabled", False):
+        _maxes.Axes.grid = lambda self, *a, **k: None
+        _maxes.Axes._grid_disabled = True
+
+
 def save_fig(fig, name, output_dir=None, dpi=150):
     import matplotlib.pyplot as plt
     fd = figures_dir(output_dir)
